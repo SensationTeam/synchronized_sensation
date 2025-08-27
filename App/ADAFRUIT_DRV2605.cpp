@@ -90,9 +90,9 @@ void Adafruit_DRV2605::autoCalibrate() {
     HAL_Delay(300);
     uint8_t status = readRegister8(DRV2605_REG_STATUS);
     if (status & 0x08)
-        printf("✅ Auto-calibration success\n");
+        printf("✅ Auto-calibration success\r\n");
     else
-        printf("❌ Auto-calibration failed\n");
+        printf("❌ Auto-calibration failed\r\n");
 }
 
 

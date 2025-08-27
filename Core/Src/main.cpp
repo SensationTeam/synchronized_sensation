@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "dma_buffer.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "application.hpp"
@@ -127,7 +128,7 @@ int main(void)
 
 
 	printf("System start\r\n");
-
+	fflush(stdout);
   /* USER CODE END 2 */
 
   /* Infinite loop */

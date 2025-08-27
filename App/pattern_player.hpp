@@ -25,10 +25,10 @@ typedef enum {
 //int GetDelayMs(int x, int patternArray[][2], int patternLength);
 //void SetTIM3DutyCycle(int dutyCycle);
 //int CalculateDuration(int patternArray[][2], int patternLength);
-extern bool pendingUpdate;
-extern int next_duty_motor1;
-extern int next_duty_motor2;
-extern int next_period;
+extern volatile  bool pendingUpdate;
+extern volatile int next_duty_motor1;
+extern volatile int next_duty_motor2;
+extern volatile int next_period;
 
 
 void PatternTimerCallback();  // This is for 1 ms timer counter to drive motors

@@ -4,8 +4,6 @@
  *  Created on: Sep 18, 2024
  *      Author: tulip
  */
-
-// Parser.cpp
 #include <Parser.hpp>
 #include <cstdio>   // for printf
 #include <cstring>  // for strcpy, strlen
@@ -28,7 +26,6 @@ int period = 0;
     @param i2c_handle Pointer to the I2C handle
 */
 /**************************************************************************/
-
 Parser::Parser() {
 	// Constructor logic if needed
 }
@@ -129,6 +126,9 @@ void Parser::sendStatusToPython() {
     printJson("%s\r\n", buffer);
     doc.clear();
 }
+
+
+
 
 
 

@@ -35,12 +35,12 @@ MotorControl hMotor2; // Motor 2 kontrolcüsü
 int patternA[][2] = { { 0x10, 20 }, { 0x00, 200 } }; // Motor 1 için titreşim deseni
 int patternB[][2] = { { 0x10, 20 }, { 0x00, 200 } }; // Motor 2 için titreşim deseni
 // Geçici olarak JSON'dan gelen değerler burada tutulur
-bool pendingUpdate = false;
-int next_duty_motor1 = -1;
-int next_duty_motor2 = -1;
-int next_period = 100;
-bool isMotor1Connected = false;
-bool isMotor2Connected = false;
+volatile bool pendingUpdate = false;
+volatile int next_duty_motor1 = -1;
+volatile int next_duty_motor2 = -1;
+volatile int next_period = 100;
+volatile bool isMotor1Connected = false;
+volatile bool isMotor2Connected = false;
 // Motor modunu belirle
 PWM_Mode_t PWM_Mode = Duty_Mode;
 
@@ -127,6 +127,9 @@ void InitMotor(MotorControl *motor, Adafruit_DRV2605 *driver, int (*pattern)[2],
     if (motor == &hMotor2) isMotor2Connected = connected;
 
     if (connected) {
+    	DRV2605_SoftwareReset(motor);      // <- ekle
+    	    motor->driver->setRealtimeValue(0x00);
+    	    motor->isDisabled = true;
         printf("%s: DRV2605L initialized successfully.\r\n", motorName);
 
         motor->driver->setMode(DRV2605_MODE_REALTIME);
@@ -217,9 +220,13 @@ void SetDuty(Motor_t is_motor, int duty, int period) {
     apply_new_duty(motor, duty, period);
 
             // Pattern baştan başlasın
-    motor->pair_index = 1;
+    motor->pair_index = 0;
     motor->millis_counter = 0;
     motor->isDisabled = false;
+
+    // İlk fazı anında uygula (gecikmesiz başlasın)
+       int pwm = motor->pattern[motor->pair_index][PatternValueIndex];
+       motor->driver->setRealtimeValue(pwm);
 
 }
 
@@ -229,7 +236,7 @@ void SetDuty(Motor_t is_motor, int duty, int period) {
 /************************************************************
  * @brief Her 1ms'de çağrılan timer geri çağrım fonksiyonu
  *
- * İki motor için ayrı ayrı `play_pattern()` fonksiyonu çağrılır.
+ * İki motor için ayrı ayrı play_pattern() fonksiyonu çağrılır.
  ************************************************************/
 void PatternTimerCallback() {
     // JSON'dan gelen duty update'leri varsa, önce bunları uygula
@@ -250,14 +257,14 @@ void PatternTimerCallback() {
     // Her motorun durumu kontrol edilir
     bool motor1_active = !hMotor1.isDisabled;
     bool motor2_active = !hMotor2.isDisabled;
-    if (motor1_active==false) return;
-    if (motor2_active==false) return;
+    if (motor1_active==false || motor2_active==false ) return;
+
     if (motor1_active && motor2_active) {
-        play_pattern_synchronized(&hMotor1, &hMotor2);
-    } else {
-        if (motor1_active) play_pattern(&hMotor1);
-        if (motor2_active) play_pattern(&hMotor2);
+        play_pattern_synchronized(&hMotor1, &hMotor2);return;
     }
+    if (motor1_active) play_pattern(&hMotor1);
+    if (motor2_active) play_pattern(&hMotor2);
+
 }
 
 
@@ -288,7 +295,7 @@ void play_pattern_synchronized(MotorControl* motor1, MotorControl* motor2) {
     motor1->driver->setRealtimeValue(pwm_value1);
 
 
-    while (HAL_I2C_GetState(motor2->driver->getWire()) != HAL_I2C_STATE_READY);
+    //while (HAL_I2C_GetState(motor2->driver->getWire()) != HAL_I2C_STATE_READY);
 
 
     motor2->driver->setRealtimeValue(pwm_value2);

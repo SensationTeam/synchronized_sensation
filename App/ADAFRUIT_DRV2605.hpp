@@ -68,7 +68,7 @@
 // Additional register definitions as needed...
 class Adafruit_DRV2605 {
 public:
-	Adafruit_DRV2605();
+
 	Adafruit_DRV2605(I2C_HandleTypeDef *i2c_handle1, TIM_HandleTypeDef *timer);
 	I2C_HandleTypeDef* getWire();
 		void init();                 // Başlatma
